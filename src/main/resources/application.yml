@@ -50,3 +50,5 @@ logging:
     com.thoughtmechanix: DEBUG
 
 debug: true
+
+AUTHENTICATION_API: http://someting:9909

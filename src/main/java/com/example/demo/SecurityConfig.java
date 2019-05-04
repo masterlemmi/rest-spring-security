@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -81,14 +82,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("admin").password(encoder().encode("password")).roles("ADMIN")
-                .and()
-                .withUser("user").password(encoder().encode("password")).roles("USER");
+        auth.authenticationProvider(restAuthenticationProvider());
+//        auth.inMemoryAuthentication()
+//                .withUser("admin").password(encoder().encode("password")).roles("ADMIN")
+//                .and()
+//                .withUser("user").password(encoder().encode("password")).roles("USER");
     }
 
     @Bean
     public PasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    AuthenticationProvider restAuthenticationProvider(){
+        return new RestAuthenticationProvider();
     }
 }
