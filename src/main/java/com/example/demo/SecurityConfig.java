@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +14,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -37,22 +39,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().and()
-                .csrf().disable()
-                .exceptionHandling()
-                .authenticationEntryPoint(restAuthenticationEntryPoint())
+                    .cors()
                 .and()
-                .authorizeRequests()
-                .antMatchers("/hello").authenticated()
-                .antMatchers("/user").authenticated()
-                .antMatchers("/encrypt", "/decrypt").authenticated()
+                    .exceptionHandling()
+                    .authenticationEntryPoint(restAuthenticationEntryPoint())
                 .and()
-                .formLogin()
+                    .authorizeRequests()
+                    .antMatchers("/hello").authenticated()
+                    //.antMatchers("/user").authenticated()
+                    .antMatchers("/encrypt", "/decrypt").authenticated()
+                    .antMatchers("/login").permitAll()
+                .and()
+                    .csrf().disable()    
+                    //.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
+                    .formLogin()
                     .successHandler(mySuccessHandler())
                     .failureHandler(myFailureHandler())
                 .and()
-                .logout()
-                    .deleteCookies("JSESSIONID");
+                    .logout()
+                    .deleteCookies("JSESSIONID")
+                    .logoutUrl("/api/logout")
+                    .logoutSuccessHandler(
+                            (HttpServletRequest request, HttpServletResponse response, Authentication authentication) ->  System.out.println("Logout Success"));
     }
 
     private AuthenticationFailureHandler myFailureHandler() {
